@@ -8,7 +8,7 @@
 		<version>1.1.1</version>
 	</parent>
 
-	<groupId>org.openmrs.module</groupId>
+	<groupId>org.bahmni.module</groupId>
 	<artifactId>bahmniHwcInventory</artifactId>
 	<version>0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -18,9 +18,9 @@
 	<url>https://wiki.openmrs.org/x/FQ4z</url>
 
 	<scm>
-		<connection>scm:git:git@github.com:openmrs/openmrs-module-basicmodule.git</connection>
-		<developerConnection>scm:git:git@github.com:openmrs/openmrs-module-basicmodule.git</developerConnection>
-		<url>https://github.com/openmrs/openmrs-module-basicmodule/</url>
+		<connection>scm:git:git@github.com:Bahmni-HWC/openmrs-module-hwc-inventory.git</connection>
+		<developerConnection>scm:git:git@github.com:Bahmni-HWC/openmrs-module-hwc-inventory.git</developerConnection>
+		<url>https://github.com/Bahmni-HWC/openmrs-module-hwc-inventory.git</url>
 	</scm>
 
 	<modules>
@@ -89,13 +89,13 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.openmrs.module</groupId>
+				<groupId>org.bahmni.module</groupId>
 				<artifactId>bahmniHwcInventory-api</artifactId>
 				<version>${openmrs.bahmniHwcInventory.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.openmrs.module</groupId>
+				<groupId>org.bahmni.module</groupId>
 				<artifactId>bahmniHwcInventory-omod</artifactId>
 				<version>${openmrs.bahmniHwcInventory.version}</version>
 				<scope>provided</scope>
