@@ -16,7 +16,7 @@
     <description>Bahmni module for hwcinventory</description>
 
     <properties>
-        <MODULE_ID>communication</MODULE_ID>
+        <MODULE_ID>hwcinventory</MODULE_ID>
         <MODULE_NAME>${project.name}</MODULE_NAME>
         <MODULE_VERSION>${project.version}</MODULE_VERSION>
         <MODULE_PACKAGE>${project.groupId}.${MODULE_ID}</MODULE_PACKAGE>

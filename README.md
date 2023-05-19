@@ -1,2 +1,2 @@
-# openmrs-module-communication
+# openmrs-module-hwcinventory
 OpenMRS Module for HwcInventory

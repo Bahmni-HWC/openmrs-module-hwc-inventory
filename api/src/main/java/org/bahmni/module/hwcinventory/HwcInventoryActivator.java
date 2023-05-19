@@ -9,11 +9,11 @@ public class HwcInventoryActivator extends BaseModuleActivator {
 
     @Override
     public void started() {
-        log.info("Started Bahmni Communication module");
+        log.info("Started Bahmni hwcinventory module");
     }
 
     @Override
     public void stopped() {
-        log.info("Stopped Bahmni Communication module");
+        log.info("Stopped Bahmni hwcinventory module");
     }
 }
