@@ -29,4 +29,10 @@
         <file>messages_es.properties</file>
     </messages>
 
+    <globalProperty>
+        <property>esanjeevani.url.webDomain</property>
+        <defaultValue>https://uat.esanjeevani.in/#/</defaultValue>
+        <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
+    </globalProperty>
+
 </module>
