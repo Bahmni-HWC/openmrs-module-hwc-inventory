@@ -22,6 +22,28 @@
   		    http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
   		    http://www.springframework.org/schema/util
   		    http://www.springframework.org/schema/util/spring-util-3.0.xsd">
-    
-    <context:component-scan base-package="org.openmrs.module.fhirExtension"/>
+
+    <bean id="communicationService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="preInterceptors">
+            <ref bean="serviceInterceptors"/>
+        </property>
+        <property name="transactionAttributeSource">
+            <ref bean="transactionAttributeSource"/>
+        </property>
+        <property name="target">
+            <bean class="org.bahmni.module.communication.api.impl.CommunicationServiceImpl">
+            </bean>
+        </property>
+    </bean>
+    <bean parent="serviceContext">
+        <property name="moduleService">
+            <list>
+                <value>org.bahmni.module.communication.api.CommunicationService</value>
+                <ref bean="communicationService" />
+            </list>
+        </property>
+    </bean>
 </beans>
