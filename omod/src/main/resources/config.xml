@@ -12,7 +12,9 @@
 
     <activator>org.bahmni.module.hwcinventory.HwcInventoryActivator</activator>
 
-    <require_version>1.11.6</require_version>
+    <require_modules>
+        <require_module>org.openmrs.module.webservices.rest</require_module>
+    </require_modules>
 
     <messages>
         <lang>en</lang>
