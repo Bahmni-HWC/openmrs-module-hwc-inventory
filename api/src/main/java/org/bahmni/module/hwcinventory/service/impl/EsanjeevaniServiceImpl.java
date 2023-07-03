@@ -11,19 +11,16 @@ import java.util.stream.Collectors;
 
 
 public class EsanjeevaniServiceImpl implements EsanjeevaniService {
-
-    private final static String ESANJEEVANI_SERVER_URL_KEY = "esanjeevani.url.webDomain";
-
-    private final static String DEFAULT_ESANJEEVANI_SERVER_URL = "https://uat.esanjeevani.in/#/";
-
     @Override
-    public String getEsanjeevaniWebDomain() {
-        String esanjeevaniServerUrl = org.openmrs.api.context.Context.getAdministrationService().getGlobalProperty(ESANJEEVANI_SERVER_URL_KEY);
-        if ((esanjeevaniServerUrl == null) || "".equals(esanjeevaniServerUrl)) {
-            esanjeevaniServerUrl = DEFAULT_ESANJEEVANI_SERVER_URL;
-        }
-        return esanjeevaniServerUrl;
+    public String getEsanjeevaniWebDomain() throws Exception {
+
+        String referenceId=authenticateReference();
+
+        System.out.println("Response from referenceId generateReferenceIdForSSO data: " + Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url")+referenceId);
+
+        return Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url")+referenceId;
     }
+
     public String makeHttpRequest(String endpoint, String requestBody, String token) throws Exception {
         URL url = new URL(endpoint);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -57,6 +54,15 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
             throw new RuntimeException(e);
         }
     }
+    public String extractReferenceId(String response) {
+        try {
+            Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
+            Map<String, Object> modelObject = (Map<String, Object>) jsonResponse.get("model");
+            return (String) modelObject.get("referenceId");
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public String makeProviderLoginRequest() throws Exception {
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.providerEndpoint");
@@ -85,7 +91,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         return response;
     }
 
-    public String generateReferenceIdForSSO() throws Exception {
+    public String authenticateReference() throws Exception {
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.referenceIdEndpoint");
         String requestBody = Context.getAdministrationService().getGlobalProperty("esanjeevani.requestBody");
 
@@ -93,7 +99,11 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
         System.out.println("Response from generateReferenceIdForSSO: " + response);
 
-        return response;
+        String referenceId = extractReferenceId(response);
+
+        System.out.println("Response from generateReferenceIdForSSO: " + referenceId);
+
+        return referenceId;
     }
 
 }

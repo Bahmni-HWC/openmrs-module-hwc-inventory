@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 @Service
 public interface EsanjeevaniService {
 
-    String getEsanjeevaniWebDomain();
+    String getEsanjeevaniWebDomain() throws Exception;
 
     String makeProviderLoginRequest() throws Exception;
 
     String createPatientRegistration() throws Exception;
 
-    String generateReferenceIdForSSO() throws Exception;
+    String authenticateReference() throws Exception;
 
 }
