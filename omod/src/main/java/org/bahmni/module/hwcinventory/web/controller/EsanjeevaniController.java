@@ -21,6 +21,15 @@ public class EsanjeevaniController extends BaseRestController{
     @RequestMapping(value = "/launch" ,method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<Void> launchEsanjeevani() {
+
+        try {
+            esanjeevaniService.createPatientRegistration();
+            esanjeevaniService.generateReferenceIdForSSO();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
         return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header("Location", esanjeevaniService.getEsanjeevaniWebDomain()).build();
     }
+
 }
