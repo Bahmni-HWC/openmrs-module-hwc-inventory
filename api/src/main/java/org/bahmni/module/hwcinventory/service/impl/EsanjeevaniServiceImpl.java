@@ -1,16 +1,25 @@
 package org.bahmni.module.hwcinventory.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bahmni.module.hwcinventory.contract.CreatePatientRequest;
+import org.bahmni.module.hwcinventory.contract.LoginRequest;
+import org.bahmni.module.hwcinventory.mapper.EsanjeevaniPatientMapper;
 import org.bahmni.module.hwcinventory.service.EsanjeevaniService;
+import org.openmrs.Patient;
+import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 public class EsanjeevaniServiceImpl implements EsanjeevaniService {
+
+    @Autowired
+    PatientService patientService;
     @Override
     public String getEsanjeevaniWebDomain() throws Exception {
 
@@ -65,10 +74,12 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
     }
 
     public String makeProviderLoginRequest() throws Exception {
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.providerEndpoint");
-        String requestBody = Context.getAdministrationService().getGlobalProperty("esanjeevani.requestBody");
 
-        String response = makeHttpRequest(endpoint, requestBody, null);
+        LoginRequest loginRequest = new LoginRequest(getUserName(), getPassword(),getSalt(),getSource());
+
+        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/aus/api/ThirdPartyAuth/providerLogin";
+
+        String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
 
         System.out.println("Response from provider login: " + response);
 
@@ -77,14 +88,19 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         return accessToken;
     }
 
-    public String createPatientRegistration() throws Exception {
+    public String createPatientRegistration(String patientUuid) throws Exception {
+
         String token = makeProviderLoginRequest();
         System.out.println("Token: " + token);
 
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.patientRegistrationEndpoint");
+        Patient patient =patientService.getPatientByUuid(patientUuid);
+        EsanjeevaniPatientMapper esanjeevaniPatientMapper=new EsanjeevaniPatientMapper();
+        CreatePatientRequest createPatientRequest = esanjeevaniPatientMapper.getPatientRequest(patient);
+
+        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/ps/api/v1/Patient";
         String requestBody = Context.getAdministrationService().getGlobalProperty("esanjeevani.patientRegistrationRequestBody");
 
-        String response = makeHttpRequest(endpoint, requestBody, token);
+        String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(createPatientRequest), token);
 
         System.out.println("Response from patient registration: " + response);
 
@@ -92,10 +108,11 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
     }
 
     public String authenticateReference() throws Exception {
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.referenceIdEndpoint");
-        String requestBody = Context.getAdministrationService().getGlobalProperty("esanjeevani.requestBody");
+        LoginRequest loginRequest = new LoginRequest(getUserName(), getPassword(),getSalt(),getSource());
 
-        String response = makeHttpRequest(endpoint, requestBody, null);
+        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/aus/api/ThirdPartyAuth/authenticateReference";
+
+        String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
 
         System.out.println("Response from generateReferenceIdForSSO: " + response);
 
@@ -106,4 +123,19 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         return referenceId;
     }
 
+    private String getSource() {
+        return "dummy";
+    }
+
+    private String getSalt() {
+        return "dummy";
+    }
+
+    private String getPassword() {
+        return "dummy";
+    }
+
+    private String getUserName() {
+        return "dummy";
+    }
 }

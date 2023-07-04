@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -20,11 +21,10 @@ public class EsanjeevaniController extends BaseRestController{
 
     @RequestMapping(value = "/launch" ,method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Void> launchEsanjeevani() {
+    public ResponseEntity<Void> launchEsanjeevani(@RequestParam(value = "patientUuid", required = true) String patientUuid) throws Exception {
 
         try {
-            esanjeevaniService.createPatientRegistration();
-            esanjeevaniService.generateReferenceIdForSSO();
+            esanjeevaniService.createPatientRegistration(patientUuid);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

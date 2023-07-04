@@ -30,8 +30,14 @@
     </messages>
 
     <globalProperty>
-        <property>esanjeevani.url.webDomain</property>
-        <defaultValue>https://uat.esanjeevani.in/#/</defaultValue>
+        <property>esanjeevani.api.baseUrl</property>
+        <defaultValue>https://preprod.esanjeevaniopd.xyz/uat</defaultValue>
+        <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>esanjeevani.login.url</property>
+        <defaultValue>https://uat.esanjeevani.in/#/external-provider-signin/</defaultValue>
         <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
     </globalProperty>
 

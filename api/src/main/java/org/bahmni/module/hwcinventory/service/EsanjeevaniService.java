@@ -10,7 +10,7 @@ public interface EsanjeevaniService {
 
     String makeProviderLoginRequest() throws Exception;
 
-    String createPatientRegistration() throws Exception;
+    String createPatientRegistration(String patientUuid) throws Exception;
 
     String authenticateReference() throws Exception;
 
