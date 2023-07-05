@@ -65,7 +65,7 @@ public class EsanjeevaniPatientMapper {
         esanjeevaniPatientAddress.setCountryDisplay("India");
         esanjeevaniPatientAddress.setDistrictCode(526);
         esanjeevaniPatientAddress.setDistrictDisplay(personAddress.getCountyDistrict());
-        esanjeevaniPatientAddress.setPostalCode("123456");
+        esanjeevaniPatientAddress.setPostalCode(personAddress.getPostalCode());
         esanjeevaniPatientAddress.setStateCode(29);
         esanjeevaniPatientAddress.setStateDisplay(personAddress.getStateProvince());
         return Arrays.asList(esanjeevaniPatientAddress);
@@ -73,6 +73,7 @@ public class EsanjeevaniPatientMapper {
 
     private  List<EsanjeevaniContactDetails> mapPatientContactDetails(Patient patient){
         EsanjeevaniContactDetails esanjeevaniContactDetails = new EsanjeevaniContactDetails();
+        esanjeevaniContactDetails.setContactPointStatus(true);
         esanjeevaniContactDetails.setContactPointType("Phone");
         esanjeevaniContactDetails.setContactPointUse("Work");
         esanjeevaniContactDetails.setContactPointValue(patient.getAttribute("phoneNumber").getValue());

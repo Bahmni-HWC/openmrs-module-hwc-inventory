@@ -6,7 +6,7 @@ public class EsanjeevaniContactDetails {
     private String contactPointUse;
     private String contactPointValue;
 
-    public boolean isContactPointStatus() {
+    public boolean getContactPointStatus() {
         return contactPointStatus;
     }
 

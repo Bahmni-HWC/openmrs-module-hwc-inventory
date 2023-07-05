@@ -14,22 +14,38 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/esanjeevani")
-public class EsanjeevaniController extends BaseRestController{
+public class EsanjeevaniController extends BaseRestController {
 
     @Autowired
     private EsanjeevaniService esanjeevaniService;
 
-    @RequestMapping(value = "/launch" ,method = RequestMethod.GET)
+    @RequestMapping(value = "/launch", method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<Void> launchEsanjeevani(@RequestParam(value = "patientUuid", required = true) String patientUuid) throws Exception {
+    public ResponseEntity<String> launchEsanjeevani(@RequestParam(value = "patientUuid", required = true) String patientUuid) {
 
         try {
-            esanjeevaniService.createPatientRegistration(patientUuid);
+            String accessToken;
+            String loginResponse = esanjeevaniService.getLoginResponse();
+            if (esanjeevaniService.isSuccessResponse(loginResponse)) {
+                accessToken = esanjeevaniService.extractAccessToken(loginResponse);
+                String registerPatientResponse = esanjeevaniService.registerPatient(patientUuid, accessToken);
+                if (esanjeevaniService.isSuccessResponse(registerPatientResponse) || esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
+                    String ssoLoginResponse = esanjeevaniService.performSSOLogin();
+                    if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
+                        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header("Location", esanjeevaniService.getSSOUrl(ssoLoginResponse)).build();
+                    } else {
+                        return new ResponseEntity<String>(ssoLoginResponse, HttpStatus.OK);
+                    }
+                } else {
+                    return new ResponseEntity<String>(registerPatientResponse, HttpStatus.OK);
+                }
+            } else {
+                return new ResponseEntity<String>(loginResponse, HttpStatus.OK);
+            }
+
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
-        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header("Location", esanjeevaniService.getEsanjeevaniWebDomain()).build();
     }
-
 }

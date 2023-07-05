@@ -21,9 +21,11 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
     @Autowired
     PatientService patientService;
     @Override
-    public String getEsanjeevaniWebDomain() throws Exception {
+    public String getSSOUrl(String ssoLoginResponse) throws Exception {
 
-        String referenceId=authenticateReference();
+
+
+        String referenceId= extractReferenceId(ssoLoginResponse);
 
         System.out.println("Response from referenceId generateReferenceIdForSSO data: " + Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url")+referenceId);
 
@@ -54,6 +56,21 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         }
     }
 
+    public boolean isSuccessResponse(String response) throws Exception {
+        Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
+        if(jsonResponse.get("msgCode") != null && (int)jsonResponse.get("msgCode") == 1){
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isSameProfileResponse(String response) throws Exception {
+        Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
+        if(jsonResponse.get("msgCode") != null && (int)jsonResponse.get("msgCode") == 78) {
+            return true;
+        }
+        return false;
+    }
     public String extractAccessToken(String response) {
         try {
             Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
@@ -73,7 +90,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         }
     }
 
-    public String makeProviderLoginRequest() throws Exception {
+    public String getLoginResponse() throws Exception {
 
         LoginRequest loginRequest = new LoginRequest(getUserName(), getPassword(),getSalt(),getSource());
 
@@ -83,31 +100,25 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
         System.out.println("Response from provider login: " + response);
 
-        String accessToken = extractAccessToken(response);
-
-        return accessToken;
+        return response;
     }
 
-    public String createPatientRegistration(String patientUuid) throws Exception {
-
-        String token = makeProviderLoginRequest();
-        System.out.println("Token: " + token);
+    public String registerPatient(String patientUuid, String accessToken) throws Exception {
 
         Patient patient =patientService.getPatientByUuid(patientUuid);
         EsanjeevaniPatientMapper esanjeevaniPatientMapper=new EsanjeevaniPatientMapper();
         CreatePatientRequest createPatientRequest = esanjeevaniPatientMapper.getPatientRequest(patient);
 
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/ps/api/v1/Patient";
-        String requestBody = Context.getAdministrationService().getGlobalProperty("esanjeevani.patientRegistrationRequestBody");
 
-        String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(createPatientRequest), token);
+        String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(createPatientRequest), accessToken);
 
         System.out.println("Response from patient registration: " + response);
 
         return response;
     }
 
-    public String authenticateReference() throws Exception {
+    public String performSSOLogin() throws Exception {
         LoginRequest loginRequest = new LoginRequest(getUserName(), getPassword(),getSalt(),getSource());
 
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/aus/api/ThirdPartyAuth/authenticateReference";
@@ -116,11 +127,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
         System.out.println("Response from generateReferenceIdForSSO: " + response);
 
-        String referenceId = extractReferenceId(response);
-
-        System.out.println("Response from generateReferenceIdForSSO: " + referenceId);
-
-        return referenceId;
+        return response;
     }
 
     private String getSource() {

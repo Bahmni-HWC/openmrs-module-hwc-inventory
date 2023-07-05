@@ -6,12 +6,19 @@ import org.springframework.stereotype.Service;
 @Service
 public interface EsanjeevaniService {
 
-    String getEsanjeevaniWebDomain() throws Exception;
+    String getSSOUrl(String ssoLoginResponse) throws Exception;
 
-    String makeProviderLoginRequest() throws Exception;
+    String getLoginResponse() throws Exception;
 
-    String createPatientRegistration(String patientUuid) throws Exception;
+    String registerPatient(String patientUuid, String accessToken) throws Exception;
 
-    String authenticateReference() throws Exception;
+    boolean isSameProfileResponse(String response) throws Exception;
+
+    boolean isSuccessResponse(String response) throws Exception;
+
+    String extractAccessToken(String response) throws Exception;
+
+    String performSSOLogin() throws Exception;
+
 
 }
