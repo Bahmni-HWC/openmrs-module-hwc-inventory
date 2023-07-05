@@ -8,7 +8,7 @@ public interface EsanjeevaniService {
 
     String getSSOUrl(String ssoLoginResponse) throws Exception;
 
-    String getLoginResponse() throws Exception;
+    String getLoginResponse(String username, String password) throws Exception;
 
     String registerPatient(String patientUuid, String accessToken) throws Exception;
 
@@ -18,7 +18,7 @@ public interface EsanjeevaniService {
 
     String extractAccessToken(String response) throws Exception;
 
-    String performSSOLogin() throws Exception;
+    String performSSOLogin(String username, String password) throws Exception;
 
 
 }

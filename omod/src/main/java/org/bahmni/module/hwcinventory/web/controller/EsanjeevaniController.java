@@ -1,5 +1,6 @@
 package org.bahmni.module.hwcinventory.web.controller;
 
+import org.bahmni.module.hwcinventory.contract.LaunchRequest;
 import org.bahmni.module.hwcinventory.service.EsanjeevaniService;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
@@ -7,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/esanjeevani")
@@ -19,28 +17,28 @@ public class EsanjeevaniController extends BaseRestController {
     @Autowired
     private EsanjeevaniService esanjeevaniService;
 
-    @RequestMapping(value = "/launch", method = RequestMethod.GET)
+    @RequestMapping(value = "/launch", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<String> launchEsanjeevani(@RequestParam(value = "patientUuid", required = true) String patientUuid) {
+    public ResponseEntity<String> launchEsanjeevani(@RequestBody LaunchRequest launchRequest) {
 
         try {
-            String accessToken;
-            String loginResponse = esanjeevaniService.getLoginResponse();
+            String loginResponse = esanjeevaniService.getLoginResponse(launchRequest.getUsername(),launchRequest.getPassword());
             if (esanjeevaniService.isSuccessResponse(loginResponse)) {
-                accessToken = esanjeevaniService.extractAccessToken(loginResponse);
-                String registerPatientResponse = esanjeevaniService.registerPatient(patientUuid, accessToken);
+                String accessToken = esanjeevaniService.extractAccessToken(loginResponse);
+                String registerPatientResponse = esanjeevaniService.registerPatient(launchRequest.getPatientUuid(), accessToken);
                 if (esanjeevaniService.isSuccessResponse(registerPatientResponse) || esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
-                    String ssoLoginResponse = esanjeevaniService.performSSOLogin();
+                    String ssoLoginResponse = esanjeevaniService.performSSOLogin(launchRequest.getUsername(),launchRequest.getPassword());
                     if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
-                        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header("Location", esanjeevaniService.getSSOUrl(ssoLoginResponse)).build();
+                        return new ResponseEntity<>(esanjeevaniService.getSSOUrl(ssoLoginResponse),HttpStatus.OK);
+//                        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header("Location", esanjeevaniService.getSSOUrl(ssoLoginResponse)).build();
                     } else {
-                        return new ResponseEntity<String>(ssoLoginResponse, HttpStatus.OK);
+                        return new ResponseEntity<String>(ssoLoginResponse, HttpStatus.BAD_REQUEST);
                     }
                 } else {
-                    return new ResponseEntity<String>(registerPatientResponse, HttpStatus.OK);
+                    return new ResponseEntity<String>(registerPatientResponse, HttpStatus.BAD_REQUEST);
                 }
             } else {
-                return new ResponseEntity<String>(loginResponse, HttpStatus.OK);
+                return new ResponseEntity<String>(loginResponse, HttpStatus.BAD_REQUEST);
             }
 
         } catch (Exception e) {

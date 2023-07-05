@@ -5,6 +5,7 @@ import org.bahmni.module.hwcinventory.contract.EsanjeevaniContactDetails;
 import org.bahmni.module.hwcinventory.contract.EsanjeevaniPatientAddress;
 import org.openmrs.Patient;
 import org.openmrs.PersonAddress;
+import org.openmrs.api.context.Context;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -26,7 +27,7 @@ public class EsanjeevaniPatientMapper {
         createPatientRequest.setLstPatientAddress(mapPatientAddress(patient));
         createPatientRequest.setLstPatientContactDetail(mapPatientContactDetails(patient));
         createPatientRequest.setIsBlock(false);
-        createPatientRequest.setSource("11001");
+        createPatientRequest.setSource(Context.getAdministrationService().getGlobalProperty("esanjeevani.source"));
         patient.getIdentifiers().forEach(identifier -> {
             if (identifier.getIdentifierType().getName().equals("ABHA Number")) {
                 createPatientRequest.setAbhaNumber(identifier.getIdentifier());

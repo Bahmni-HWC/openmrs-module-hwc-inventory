@@ -41,4 +41,10 @@
         <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
     </globalProperty>
 
+    <globalProperty>
+        <property>esanjeevani.source</property>
+        <defaultValue>11001</defaultValue>
+        <description>source used for e-sanjeevani api's</description>
+    </globalProperty>
+
 </module>

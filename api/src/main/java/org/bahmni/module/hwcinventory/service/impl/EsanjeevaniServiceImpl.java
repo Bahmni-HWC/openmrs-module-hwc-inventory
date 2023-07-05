@@ -1,10 +1,12 @@
 package org.bahmni.module.hwcinventory.service.impl;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bahmni.module.hwcinventory.contract.CreatePatientRequest;
 import org.bahmni.module.hwcinventory.contract.LoginRequest;
 import org.bahmni.module.hwcinventory.mapper.EsanjeevaniPatientMapper;
 import org.bahmni.module.hwcinventory.service.EsanjeevaniService;
+import org.bahmni.module.hwcinventory.util.PasswordUtil;
 import org.openmrs.Patient;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
@@ -20,16 +22,16 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
     @Autowired
     PatientService patientService;
+
     @Override
     public String getSSOUrl(String ssoLoginResponse) throws Exception {
 
 
+        String referenceId = extractReferenceId(ssoLoginResponse);
 
-        String referenceId= extractReferenceId(ssoLoginResponse);
+        System.out.println("Response from referenceId generateReferenceIdForSSO data: " + Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url") + referenceId);
 
-        System.out.println("Response from referenceId generateReferenceIdForSSO data: " + Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url")+referenceId);
-
-        return Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url")+referenceId;
+        return Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url") + referenceId;
     }
 
     public String makeHttpRequest(String endpoint, String requestBody, String token) throws Exception {
@@ -58,7 +60,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
     public boolean isSuccessResponse(String response) throws Exception {
         Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
-        if(jsonResponse.get("msgCode") != null && (int)jsonResponse.get("msgCode") == 1){
+        if (jsonResponse.get("msgCode") != null && (int) jsonResponse.get("msgCode") == 1) {
             return true;
         }
         return false;
@@ -66,11 +68,12 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
     public boolean isSameProfileResponse(String response) throws Exception {
         Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
-        if(jsonResponse.get("msgCode") != null && (int)jsonResponse.get("msgCode") == 78) {
+        if (jsonResponse.get("msgCode") != null && (int) jsonResponse.get("msgCode") == 78) {
             return true;
         }
         return false;
     }
+
     public String extractAccessToken(String response) {
         try {
             Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
@@ -80,6 +83,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
             throw new RuntimeException(e);
         }
     }
+
     public String extractReferenceId(String response) {
         try {
             Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
@@ -90,11 +94,13 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         }
     }
 
-    public String getLoginResponse() throws Exception {
+    public String getLoginResponse(String username, String password) throws Exception {
 
-        LoginRequest loginRequest = new LoginRequest(getUserName(), getPassword(),getSalt(),getSource());
+        String salt = getSalt();
 
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/aus/api/ThirdPartyAuth/providerLogin";
+        LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
+
+        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/providerLogin";
 
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
 
@@ -105,11 +111,13 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
     public String registerPatient(String patientUuid, String accessToken) throws Exception {
 
-        Patient patient =patientService.getPatientByUuid(patientUuid);
-        EsanjeevaniPatientMapper esanjeevaniPatientMapper=new EsanjeevaniPatientMapper();
+        Patient patient = patientService.getPatientByUuid(patientUuid);
+
+        EsanjeevaniPatientMapper esanjeevaniPatientMapper = new EsanjeevaniPatientMapper();
+
         CreatePatientRequest createPatientRequest = esanjeevaniPatientMapper.getPatientRequest(patient);
 
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/ps/api/v1/Patient";
+        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/ps/api/v1/Patient";
 
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(createPatientRequest), accessToken);
 
@@ -118,10 +126,12 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         return response;
     }
 
-    public String performSSOLogin() throws Exception {
-        LoginRequest loginRequest = new LoginRequest(getUserName(), getPassword(),getSalt(),getSource());
+    public String performSSOLogin(String username, String password) throws Exception {
+        String salt = getSalt();
 
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl")+"/aus/api/ThirdPartyAuth/authenticateReference";
+        LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
+
+        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/authenticateReference";
 
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
 
@@ -131,18 +141,11 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
     }
 
     private String getSource() {
-        return "dummy";
+        return Context.getAdministrationService().getGlobalProperty("esanjeevani.source");
     }
 
     private String getSalt() {
-        return "dummy";
-    }
-
-    private String getPassword() {
-        return "dummy";
-    }
-
-    private String getUserName() {
-        return "dummy";
+        int randomNumber = (int) (Math.random() * 900000) + 100000;
+        return Integer.toString(randomNumber);
     }
 }
