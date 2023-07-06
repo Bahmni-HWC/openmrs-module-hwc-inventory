@@ -2,6 +2,7 @@ package org.bahmni.module.hwcinventory.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import liquibase.pro.packaged.S;
 import org.apache.velocity.runtime.log.Log;
 import org.bahmni.module.hwcinventory.contract.CreatePatientRequest;
 import org.bahmni.module.hwcinventory.contract.LoginRequest;
@@ -47,7 +48,9 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         int responseCode = connection.getResponseCode();
         if (responseCode >= 200 && responseCode < 300) {
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                return bufferedReader.lines().collect(Collectors.joining());
+                String response = bufferedReader.lines().collect(Collectors.joining());
+                logResponse(endpoint,response);
+                return response;
             }
         } else {
             throw new Exception("Error response received with code: " + responseCode + ", Message: " + connection.getResponseMessage());
@@ -95,7 +98,6 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/providerLogin";
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
-        logger.log(Level.INFO, displayLoggerResponse(response));
         return response;
     }
 
@@ -105,7 +107,6 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         CreatePatientRequest createPatientRequest = esanjeevaniPatientMapper.getPatientRequest(patient);
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/ps/api/v1/Patient";
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(createPatientRequest), accessToken);
-        logger.log(Level.INFO, displayLoggerResponse(response));
         return response;
     }
 
@@ -114,13 +115,14 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/authenticateReference";
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
-        logger.log(Level.INFO, displayLoggerResponse(response));
         return response;
     }
 
-    public String displayLoggerResponse(String response) throws Exception {
-        Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
-        return jsonResponse.get("message").toString();
+    private void logResponse(String url, String response) throws Exception {
+        if (Context.getAdministrationService().getGlobalProperty("esanjeevani.debug").equals("true")) {
+            logger.log(Level.INFO, "Response for: "+ url);
+            logger.log(Level.INFO, response);
+        }
     }
 
     private String getSource() {

@@ -47,4 +47,10 @@
         <description>source used for e-sanjeevani api's</description>
     </globalProperty>
 
+    <globalProperty>
+        <property>esanjeevani.debug</property>
+        <defaultValue>false</defaultValue>
+        <description>set this true if want to log response to esanjeevani</description>
+    </globalProperty>
+
 </module>
