@@ -32,7 +32,7 @@
     <globalProperty>
         <property>esanjeevani.api.baseUrl</property>
         <defaultValue>https://preprod.esanjeevaniopd.xyz/uat</defaultValue>
-        <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
+        <description>Base URL of e-sanjeevani</description>
     </globalProperty>
 
     <globalProperty>

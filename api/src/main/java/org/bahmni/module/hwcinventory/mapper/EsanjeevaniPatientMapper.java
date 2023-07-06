@@ -45,7 +45,6 @@ public class EsanjeevaniPatientMapper {
     }
 
     private String getGenderFullText(Patient patient){
-
         String gender= patient.getGender();
         if (gender.equals("M")) return "Male";
         if (gender.equals("F")) return  "Female";
@@ -58,17 +57,17 @@ public class EsanjeevaniPatientMapper {
         esanjeevaniPatientAddress.setAddressLine1(personAddress.getAddress1());
         esanjeevaniPatientAddress.setAddressType("Physical");
         esanjeevaniPatientAddress.setAddressUse("Work");
-        esanjeevaniPatientAddress.setBlockCode(0);
-        esanjeevaniPatientAddress.setBlockDisplay("");
-        esanjeevaniPatientAddress.setCityCode(5604);
-        esanjeevaniPatientAddress.setCityDisplay(personAddress.getAddress4());
-        esanjeevaniPatientAddress.setCountryCode("1");
-        esanjeevaniPatientAddress.setCountryDisplay("India");
+        esanjeevaniPatientAddress.setPostalCode(personAddress.getPostalCode());
+        esanjeevaniPatientAddress.setCityCode(0);
+        esanjeevaniPatientAddress.setCityDisplay(personAddress.getCityVillage());
+        esanjeevaniPatientAddress.setBlockCode(5604);
+        esanjeevaniPatientAddress.setBlockDisplay(personAddress.getAddress4());
         esanjeevaniPatientAddress.setDistrictCode(526);
         esanjeevaniPatientAddress.setDistrictDisplay(personAddress.getCountyDistrict());
-        esanjeevaniPatientAddress.setPostalCode(personAddress.getPostalCode());
         esanjeevaniPatientAddress.setStateCode(29);
         esanjeevaniPatientAddress.setStateDisplay(personAddress.getStateProvince());
+        esanjeevaniPatientAddress.setCountryCode("1");
+        esanjeevaniPatientAddress.setCountryDisplay("India");
         return Arrays.asList(esanjeevaniPatientAddress);
     }
 

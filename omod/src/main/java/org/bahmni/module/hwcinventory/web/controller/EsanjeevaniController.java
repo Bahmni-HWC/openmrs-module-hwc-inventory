@@ -30,7 +30,6 @@ public class EsanjeevaniController extends BaseRestController {
                     String ssoLoginResponse = esanjeevaniService.performSSOLogin(launchRequest.getUsername(),launchRequest.getPassword());
                     if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
                         return new ResponseEntity<>(esanjeevaniService.getSSOUrl(ssoLoginResponse),HttpStatus.OK);
-//                        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header("Location", esanjeevaniService.getSSOUrl(ssoLoginResponse)).build();
                     } else {
                         return new ResponseEntity<String>(ssoLoginResponse, HttpStatus.BAD_REQUEST);
                     }

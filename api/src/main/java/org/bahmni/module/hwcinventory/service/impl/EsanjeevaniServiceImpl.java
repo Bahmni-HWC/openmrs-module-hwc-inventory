@@ -2,6 +2,7 @@ package org.bahmni.module.hwcinventory.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.velocity.runtime.log.Log;
 import org.bahmni.module.hwcinventory.contract.CreatePatientRequest;
 import org.bahmni.module.hwcinventory.contract.LoginRequest;
 import org.bahmni.module.hwcinventory.mapper.EsanjeevaniPatientMapper;
@@ -11,26 +12,23 @@ import org.openmrs.Patient;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class EsanjeevaniServiceImpl implements EsanjeevaniService {
 
     @Autowired
     PatientService patientService;
+    private Log log;
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EsanjeevaniServiceImpl.class.getName());
 
     @Override
     public String getSSOUrl(String ssoLoginResponse) throws Exception {
-
-
         String referenceId = extractReferenceId(ssoLoginResponse);
-
-        System.out.println("Response from referenceId generateReferenceIdForSSO data: " + Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url") + referenceId);
-
         return Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url") + referenceId;
     }
 
@@ -43,11 +41,9 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
             connection.setRequestProperty("Authorization", "Bearer " + token);
         }
         connection.setDoOutput(true);
-
         try (OutputStream outputStream = connection.getOutputStream()) {
             outputStream.write(requestBody.getBytes());
         }
-
         int responseCode = connection.getResponseCode();
         if (responseCode >= 200 && responseCode < 300) {
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
@@ -95,49 +91,36 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
     }
 
     public String getLoginResponse(String username, String password) throws Exception {
-
         String salt = getSalt();
-
         LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
-
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/providerLogin";
-
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
-
-        System.out.println("Response from provider login: " + response);
-
+        logger.log(Level.INFO, displayLoggerResponse(response));
         return response;
     }
 
     public String registerPatient(String patientUuid, String accessToken) throws Exception {
-
         Patient patient = patientService.getPatientByUuid(patientUuid);
-
         EsanjeevaniPatientMapper esanjeevaniPatientMapper = new EsanjeevaniPatientMapper();
-
         CreatePatientRequest createPatientRequest = esanjeevaniPatientMapper.getPatientRequest(patient);
-
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/ps/api/v1/Patient";
-
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(createPatientRequest), accessToken);
-
-        System.out.println("Response from patient registration: " + response);
-
+        logger.log(Level.INFO, displayLoggerResponse(response));
         return response;
     }
 
     public String performSSOLogin(String username, String password) throws Exception {
         String salt = getSalt();
-
         LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
-
         String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/authenticateReference";
-
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
-
-        System.out.println("Response from generateReferenceIdForSSO: " + response);
-
+        logger.log(Level.INFO, displayLoggerResponse(response));
         return response;
+    }
+
+    public String displayLoggerResponse(String response) throws Exception {
+        Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
+        return jsonResponse.get("message").toString();
     }
 
     private String getSource() {
