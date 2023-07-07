@@ -40,6 +40,7 @@
     </modules>
 
     <properties>
+        <addressHierarchyVersion>2.14.2</addressHierarchyVersion>
         <openmrsPlatformVersion>2.5.10</openmrsPlatformVersion>
         <jacocoVersion>0.7.9</jacocoVersion>
         <javaxMailVersion>1.6.2</javaxMailVersion>
@@ -151,7 +152,13 @@
                 <type>jar</type>
                 <scope>provided</scope>
             </dependency>
-
+            <dependency>
+                <groupId>org.openmrs.module</groupId>
+                <artifactId>addresshierarchy-api</artifactId>
+                <version>${addressHierarchyVersion}</version>
+                <type>jar</type>
+                <scope>provided</scope>
+            </dependency>
             <dependency>
                 <groupId>org.openmrs.api</groupId>
                 <artifactId>openmrs-api</artifactId>
