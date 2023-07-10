@@ -1,18 +1,16 @@
 package org.bahmni.module.hwcinventory.contract;
 
-public class EAushadhaStockRecieptRequest {
+public class EAushadhaStockRecieptRequest {/*
     private String month;
-    private String year;
+    private String year;*/
+    private String ouid;
 
-    public EAushadhaStockRecieptRequest(String month, String year) {
-        this.month = month;
-        this.year = year;
-    }
+
 
     public EAushadhaStockRecieptRequest() {
     }
 
-    public String getMonth() {
+ /*   public String getMonth() {
         return month;
     }
 
@@ -26,5 +24,13 @@ public class EAushadhaStockRecieptRequest {
 
     public void setYear(String year) {
         this.year = year;
+    }*/
+
+    public String getOuid() {
+        return ouid;
+    }
+
+    public void setOuid(String ouid) {
+        this.ouid = ouid;
     }
 }
