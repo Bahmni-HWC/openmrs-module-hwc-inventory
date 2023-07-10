@@ -2,7 +2,6 @@ package org.bahmni.module.hwcinventory.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import liquibase.pro.packaged.S;
 import org.apache.velocity.runtime.log.Log;
 import org.bahmni.module.hwcinventory.contract.CreatePatientRequest;
 import org.bahmni.module.hwcinventory.contract.LoginRequest;
