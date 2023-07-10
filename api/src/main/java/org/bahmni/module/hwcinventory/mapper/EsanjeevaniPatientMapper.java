@@ -56,7 +56,7 @@ public class EsanjeevaniPatientMapper {
         return "Other";
     }
 
-    public List<EsanjeevaniPatientAddress> mapPatientAddress(Patient patient) throws Exception {
+    private List<EsanjeevaniPatientAddress> mapPatientAddress(Patient patient) throws Exception {
         PersonAddress personAddress = patient.getPersonAddress();
         EsanjeevaniPatientAddress esanjeevaniPatientAddress = new EsanjeevaniPatientAddress();
         esanjeevaniPatientAddress.setAddressLine1(personAddress.getAddress1());
@@ -75,7 +75,7 @@ public class EsanjeevaniPatientMapper {
         esanjeevaniPatientAddress.setCountryDisplay("India");
         return Arrays.asList(esanjeevaniPatientAddress);
     }
-    public Integer getLGDCode(String addressFieldValue, AddressField addressField) throws Exception {
+    private Integer getLGDCode(String addressFieldValue, AddressField addressField) throws Exception {
         AddressHierarchyService addressHierarchyService = Context.getService(AddressHierarchyService.class);
         AddressHierarchyLevel addressHierarchyLevel = addressHierarchyService.getAddressHierarchyLevelByAddressField(addressField);
         List<AddressHierarchyEntry> addressHierarchyEntries = addressHierarchyService.getAddressHierarchyEntriesByLevel(addressHierarchyLevel);
