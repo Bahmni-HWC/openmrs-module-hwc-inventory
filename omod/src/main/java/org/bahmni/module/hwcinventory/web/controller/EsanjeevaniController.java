@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bahmni.module.hwcinventory.contract.LaunchRequest;
 import org.bahmni.module.hwcinventory.exception.LGDCodeNotFoundException;
 import org.bahmni.module.hwcinventory.service.EsanjeevaniService;
+import org.openmrs.Privilege;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,36 +27,38 @@ public class EsanjeevaniController extends BaseRestController {
     @RequestMapping(value = "/launch", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<String> launchEsanjeevani(@RequestBody LaunchRequest launchRequest) {
-
-        try {
-            String loginResponse = esanjeevaniService.getLoginResponse(launchRequest.getUsername(),launchRequest.getPassword());
-            if (esanjeevaniService.isSuccessResponse(loginResponse)) {
-                String accessToken = esanjeevaniService.extractAccessToken(loginResponse);
-                String registerPatientResponse = esanjeevaniService.registerPatient(launchRequest.getPatientUuid(), accessToken);
-                if (esanjeevaniService.isSuccessResponse(registerPatientResponse) || esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
-                    String ssoLoginResponse = esanjeevaniService.performSSOLogin(launchRequest.getUsername(),launchRequest.getPassword());
-                    if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
-                        return new ResponseEntity<>(esanjeevaniService.getSSOUrl(ssoLoginResponse),HttpStatus.OK);
+        Privilege privilege = Context.getUserService().getPrivilege("app:eSanjeevani");
+        if (Context.getAuthenticatedUser().getPrivileges().contains(privilege)) {
+            try {
+                String loginResponse = esanjeevaniService.getLoginResponse(launchRequest.getUsername(), launchRequest.getPassword());
+                if (esanjeevaniService.isSuccessResponse(loginResponse)) {
+                    String accessToken = esanjeevaniService.extractAccessToken(loginResponse);
+                    String registerPatientResponse = esanjeevaniService.registerPatient(launchRequest.getPatientUuid(), accessToken);
+                    if (esanjeevaniService.isSuccessResponse(registerPatientResponse) || esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
+                        String ssoLoginResponse = esanjeevaniService.performSSOLogin(launchRequest.getUsername(), launchRequest.getPassword());
+                        if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
+                            return new ResponseEntity<>(esanjeevaniService.getSSOUrl(ssoLoginResponse), HttpStatus.OK);
+                        } else {
+                            return new ResponseEntity<String>(getResponseMessage(ssoLoginResponse), HttpStatus.BAD_REQUEST);
+                        }
                     } else {
-                        return new ResponseEntity<String>(getResponseMessage(ssoLoginResponse), HttpStatus.BAD_REQUEST);
+                        return new ResponseEntity<String>(getResponseMessage(registerPatientResponse), HttpStatus.BAD_REQUEST);
                     }
                 } else {
-                    return new ResponseEntity<String>(getResponseMessage(registerPatientResponse), HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity<String>(getResponseMessage(loginResponse), HttpStatus.BAD_REQUEST);
                 }
-            } else {
-                return new ResponseEntity<String>(getResponseMessage(loginResponse), HttpStatus.BAD_REQUEST);
+
+            } catch (LGDCodeNotFoundException e) {
+                return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
 
         }
-        catch (LGDCodeNotFoundException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        else{
+            return new ResponseEntity<String>("You are not authorised to do e-sanjeevani consultation", HttpStatus.UNAUTHORIZED);
         }
-        catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
     }
-
     private String getResponseMessage(String response) throws JsonProcessingException {
         Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
         return jsonResponse.get("message").toString();
