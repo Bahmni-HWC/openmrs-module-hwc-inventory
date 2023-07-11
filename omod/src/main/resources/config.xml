@@ -12,7 +12,9 @@
 
     <activator>org.bahmni.module.hwcinventory.HwcInventoryActivator</activator>
 
-    <require_version>1.11.6</require_version>
+    <require_modules>
+        <require_module>org.openmrs.module.webservices.rest</require_module>
+    </require_modules>
 
     <messages>
         <lang>en</lang>
@@ -26,5 +28,17 @@
         <lang>es</lang>
         <file>messages_es.properties</file>
     </messages>
+
+    <globalProperty>
+        <property>esanjeevani.api.baseUrl</property>
+        <defaultValue>https://preprod.esanjeevaniopd.xyz/uat</defaultValue>
+        <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>esanjeevani.login.url</property>
+        <defaultValue>https://uat.esanjeevani.in/#/external-provider-signin/</defaultValue>
+        <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
+    </globalProperty>
 
 </module>
