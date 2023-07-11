@@ -34,30 +34,4 @@ public class EAushadhaResponse {
     private int Actual_quantity;
 
 
-
-
-    /*
-    @JsonAlias("Supplier_name")
-    private String Supplier_name;
-
-    @JsonAlias("InstituteType")
-    private String InstituteType;
-
-    @JsonAlias("Rack_number")
-    private String Rack_number;
-
-
-
-    @JsonAlias("Unit_value")
-    private int Unit_value;
-    @JsonAlias("IndentNo")
-    private String IndentNo;
-
-
-    @JsonAlias("Warehouse_name")
-    private String Warehouse_name;
-    */
-
-
-
 }

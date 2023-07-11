@@ -25,4 +25,5 @@
 
     <context:component-scan base-package="org.bahmni.module.hwcinventory"/>
     <bean id="esanjeevaniService" class="org.bahmni.module.hwcinventory.service.impl.EsanjeevaniServiceImpl" />
+    <bean id="eaushadhaService" class="org.bahmni.module.hwcinventory.service.impl.EaushadhaServiceImpl" />
 </beans>
