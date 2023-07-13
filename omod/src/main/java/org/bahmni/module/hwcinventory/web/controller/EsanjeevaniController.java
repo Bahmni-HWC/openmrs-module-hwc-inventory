@@ -28,35 +28,32 @@ public class EsanjeevaniController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<String> launchEsanjeevani(@RequestBody LaunchRequest launchRequest) {
         Privilege privilege = Context.getUserService().getPrivilege("app:eSanjeevani");
-        if (Context.getAuthenticatedUser().getPrivileges().contains(privilege)) {
-            try {
-                String loginResponse = esanjeevaniService.getLoginResponse(launchRequest.getUsername(), launchRequest.getPassword());
-                if (esanjeevaniService.isSuccessResponse(loginResponse)) {
-                    String accessToken = esanjeevaniService.extractAccessToken(loginResponse);
-                    String registerPatientResponse = esanjeevaniService.registerPatient(launchRequest.getPatientUuid(), accessToken);
-                    if (esanjeevaniService.isSuccessResponse(registerPatientResponse) || esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
-                        String ssoLoginResponse = esanjeevaniService.performSSOLogin(launchRequest.getUsername(), launchRequest.getPassword());
-                        if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
-                            return new ResponseEntity<>(esanjeevaniService.getSSOUrl(ssoLoginResponse), HttpStatus.OK);
-                        } else {
-                            return new ResponseEntity<String>(getResponseMessage(ssoLoginResponse), HttpStatus.BAD_REQUEST);
-                        }
-                    } else {
-                        return new ResponseEntity<String>(getResponseMessage(registerPatientResponse), HttpStatus.BAD_REQUEST);
-                    }
-                } else {
-                    return new ResponseEntity<String>(getResponseMessage(loginResponse), HttpStatus.BAD_REQUEST);
-                }
+        if (!Context.getAuthenticatedUser().getPrivileges().contains(privilege)) {
+            return new ResponseEntity<String>("You are not authorised to do e-sanjeevani consultation", HttpStatus.UNAUTHORIZED);
+        }
 
-            } catch (LGDCodeNotFoundException e) {
-                return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        try {
+            String loginResponse = esanjeevaniService.getLoginResponse(launchRequest.getUsername(), launchRequest.getPassword());
+            if (!esanjeevaniService.isSuccessResponse(loginResponse)) {
+                return new ResponseEntity<String>(getResponseMessage(loginResponse), HttpStatus.BAD_REQUEST);
             }
 
-        }
-        else{
-            return new ResponseEntity<String>("You are not authorised to do e-sanjeevani consultation", HttpStatus.UNAUTHORIZED);
+            String accessToken = esanjeevaniService.extractAccessToken(loginResponse);
+            String registerPatientResponse = esanjeevaniService.registerPatient(launchRequest.getPatientUuid(), accessToken);
+            if (!esanjeevaniService.isSuccessResponse(registerPatientResponse) && !esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
+                return new ResponseEntity<String>(getResponseMessage(registerPatientResponse), HttpStatus.BAD_REQUEST);
+            }
+
+            String ssoLoginResponse = esanjeevaniService.performSSOLogin(launchRequest.getUsername(), launchRequest.getPassword());
+            if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
+                return new ResponseEntity<>(esanjeevaniService.getSSOUrl(ssoLoginResponse), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<String>(getResponseMessage(ssoLoginResponse), HttpStatus.BAD_REQUEST);
+            }
+        } catch (LGDCodeNotFoundException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     private String getResponseMessage(String response) throws JsonProcessingException {

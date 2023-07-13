@@ -20,16 +20,17 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class EsanjeevaniServiceImpl implements EsanjeevaniService {
-
     @Autowired
     PatientService patientService;
     private Log log;
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EsanjeevaniServiceImpl.class.getName());
+    public static final String ESANJEEVANI_LOGIN_URL ="esanjeevani.login.url";
+    public static final String ESANJEEVANI_BASE_URL ="esanjeevani.api.baseUrl";
 
     @Override
     public String getSSOUrl(String ssoLoginResponse) throws Exception {
         String referenceId = extractReferenceId(ssoLoginResponse);
-        return Context.getAdministrationService().getGlobalProperty("esanjeevani.login.url") + referenceId;
+        return Context.getAdministrationService().getGlobalProperty(ESANJEEVANI_LOGIN_URL) + referenceId;
     }
 
     public String makeHttpRequest(String endpoint, String requestBody, String token) throws Exception {
@@ -95,7 +96,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
     public String getLoginResponse(String username, String password) throws Exception {
         String salt = getSalt();
         LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/providerLogin";
+        String endpoint = Context.getAdministrationService().getGlobalProperty(ESANJEEVANI_BASE_URL) + "/aus/api/ThirdPartyAuth/providerLogin";
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
         return response;
     }
@@ -104,7 +105,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
         Patient patient = patientService.getPatientByUuid(patientUuid);
         EsanjeevaniPatientMapper esanjeevaniPatientMapper = new EsanjeevaniPatientMapper();
         CreatePatientRequest createPatientRequest = esanjeevaniPatientMapper.getPatientRequest(patient);
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/ps/api/v1/Patient";
+        String endpoint = Context.getAdministrationService().getGlobalProperty(ESANJEEVANI_BASE_URL) + "/ps/api/v1/Patient";
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(createPatientRequest), accessToken);
         return response;
     }
@@ -112,7 +113,7 @@ public class EsanjeevaniServiceImpl implements EsanjeevaniService {
     public String performSSOLogin(String username, String password) throws Exception {
         String salt = getSalt();
         LoginRequest loginRequest = new LoginRequest(username, PasswordUtil.getEncryptedPassword(password, salt), salt, getSource());
-        String endpoint = Context.getAdministrationService().getGlobalProperty("esanjeevani.api.baseUrl") + "/aus/api/ThirdPartyAuth/authenticateReference";
+        String endpoint = Context.getAdministrationService().getGlobalProperty(ESANJEEVANI_BASE_URL) + "/aus/api/ThirdPartyAuth/authenticateReference";
         String response = makeHttpRequest(endpoint, new ObjectMapper().writeValueAsString(loginRequest), null);
         return response;
     }
