@@ -117,6 +117,13 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <extensions>
+            <extension>
+                <groupId>org.kuali.maven.wagons</groupId>
+                <artifactId>maven-s3-wagon</artifactId>
+                <version>1.2.1</version>
+            </extension>
+        </extensions>
     </build>
 
     <dependencyManagement>
@@ -250,13 +257,10 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>nexus-sonatype</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>repo.mybahmni.org</id>
+            <name>bahmni-artifactory-snapshots</name>
+            <url>s3://repo.mybahmni.org/artifactory/snapshot</url>
         </snapshotRepository>
-        <repository>
-            <id>nexus-sonatype</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
     </distributionManagement>
 
     <profiles>
