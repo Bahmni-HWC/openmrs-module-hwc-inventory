@@ -13,6 +13,7 @@
     <activator>org.bahmni.module.hwcinventory.HwcInventoryActivator</activator>
 
     <require_modules>
+        <require_module>org.openmrs.module.addresshierarchy</require_module>
         <require_module>org.openmrs.module.webservices.rest</require_module>
     </require_modules>
 
@@ -32,13 +33,25 @@
     <globalProperty>
         <property>esanjeevani.api.baseUrl</property>
         <defaultValue>https://preprod.esanjeevaniopd.xyz/uat</defaultValue>
-        <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
+        <description>Base URL of e-sanjeevani</description>
     </globalProperty>
 
     <globalProperty>
         <property>esanjeevani.login.url</property>
         <defaultValue>https://uat.esanjeevani.in/#/external-provider-signin/</defaultValue>
         <description>Base URL to which e-sanjeevani redirect will have after login and patient creation</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>esanjeevani.source</property>
+        <defaultValue>11001</defaultValue>
+        <description>source used for e-sanjeevani api's</description>
+    </globalProperty>
+
+    <globalProperty>
+        <property>esanjeevani.debug</property>
+        <defaultValue>false</defaultValue>
+        <description>set this true if want to log response to esanjeevani</description>
     </globalProperty>
 
 </module>

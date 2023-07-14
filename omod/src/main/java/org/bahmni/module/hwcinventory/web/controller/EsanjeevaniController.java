@@ -1,16 +1,21 @@
 package org.bahmni.module.hwcinventory.web.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bahmni.module.hwcinventory.contract.LaunchRequest;
+import org.bahmni.module.hwcinventory.exception.LGDCodeNotFoundException;
 import org.bahmni.module.hwcinventory.service.EsanjeevaniService;
+import org.openmrs.Privilege;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Controller
 @RequestMapping(value = "/rest/" + RestConstants.VERSION_1 + "/esanjeevani")
@@ -19,33 +24,40 @@ public class EsanjeevaniController extends BaseRestController {
     @Autowired
     private EsanjeevaniService esanjeevaniService;
 
-    @RequestMapping(value = "/launch", method = RequestMethod.GET)
+    @RequestMapping(value = "/launch", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<String> launchEsanjeevani(@RequestParam(value = "patientUuid", required = true) String patientUuid) {
+    public ResponseEntity<String> launchEsanjeevani(@RequestBody LaunchRequest launchRequest) {
+        Privilege privilege = Context.getUserService().getPrivilege("app:eSanjeevani");
+        if (!Context.getAuthenticatedUser().getPrivileges().contains(privilege)) {
+            return new ResponseEntity<String>("You are not authorised to do e-sanjeevani consultation", HttpStatus.UNAUTHORIZED);
+        }
 
         try {
-            String accessToken;
-            String loginResponse = esanjeevaniService.getLoginResponse();
-            if (esanjeevaniService.isSuccessResponse(loginResponse)) {
-                accessToken = esanjeevaniService.extractAccessToken(loginResponse);
-                String registerPatientResponse = esanjeevaniService.registerPatient(patientUuid, accessToken);
-                if (esanjeevaniService.isSuccessResponse(registerPatientResponse) || esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
-                    String ssoLoginResponse = esanjeevaniService.performSSOLogin();
-                    if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
-                        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header("Location", esanjeevaniService.getSSOUrl(ssoLoginResponse)).build();
-                    } else {
-                        return new ResponseEntity<String>(ssoLoginResponse, HttpStatus.OK);
-                    }
-                } else {
-                    return new ResponseEntity<String>(registerPatientResponse, HttpStatus.OK);
-                }
-            } else {
-                return new ResponseEntity<String>(loginResponse, HttpStatus.OK);
+            String loginResponse = esanjeevaniService.getLoginResponse(launchRequest.getUsername(), launchRequest.getPassword());
+            if (!esanjeevaniService.isSuccessResponse(loginResponse)) {
+                return new ResponseEntity<String>(getResponseMessage(loginResponse), HttpStatus.BAD_REQUEST);
             }
 
+            String accessToken = esanjeevaniService.extractAccessToken(loginResponse);
+            String registerPatientResponse = esanjeevaniService.registerPatient(launchRequest.getPatientUuid(), accessToken);
+            if (!esanjeevaniService.isSuccessResponse(registerPatientResponse) && !esanjeevaniService.isSameProfileResponse(registerPatientResponse)) {
+                return new ResponseEntity<String>(getResponseMessage(registerPatientResponse), HttpStatus.BAD_REQUEST);
+            }
+
+            String ssoLoginResponse = esanjeevaniService.performSSOLogin(launchRequest.getUsername(), launchRequest.getPassword());
+            if (esanjeevaniService.isSuccessResponse(ssoLoginResponse)) {
+                return new ResponseEntity<>(esanjeevaniService.getSSOUrl(ssoLoginResponse), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<String>(getResponseMessage(ssoLoginResponse), HttpStatus.BAD_REQUEST);
+            }
+        } catch (LGDCodeNotFoundException e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
+    }
+    private String getResponseMessage(String response) throws JsonProcessingException {
+        Map<String, Object> jsonResponse = new ObjectMapper().readValue(response, Map.class);
+        return jsonResponse.get("message").toString();
     }
 }
