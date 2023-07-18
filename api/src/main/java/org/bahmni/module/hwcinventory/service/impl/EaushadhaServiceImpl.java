@@ -2,7 +2,6 @@ package org.bahmni.module.hwcinventory.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.bahmni.module.hwcinventory.contract.EAushadhaRequest;
@@ -15,9 +14,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class EaushadhaServiceImpl implements EaushadhaService {
@@ -25,12 +23,12 @@ public class EaushadhaServiceImpl implements EaushadhaService {
 
     @Override
     public List<EAushadhaResponse> fetchStockDetails(String outwardId) throws Exception {
-        List<EAushadhaResponse> outwardDetails = null;
+        List<EAushadhaResponse> eAushadhaResponses;
         try {
 
             String accessToken = System.getenv("EAUSHADHA_ACCESS_TOKEN");
 
-            String eAushadhaUrl = Context.getAdministrationService().getGlobalProperty("eaushadha.api.baseUrl")+"/api/InstituteOutward";
+            String eAushadhaUrl = Context.getAdministrationService().getGlobalProperty("eaushadha.api.baseUrl") + "/api/InstituteOutward";
 
 
             EAushadhaRequest externalRequestData = new EAushadhaRequest(outwardId);
@@ -40,40 +38,14 @@ public class EaushadhaServiceImpl implements EaushadhaService {
 
             ObjectMapper objectMapper = new ObjectMapper();
 
-            String escapedResponse = StringEscapeUtils.unescapeJava(response);
-            outwardDetails = objectMapper.readValue(escapedResponse.substring(1, escapedResponse.length() - 1), new TypeReference<List<EAushadhaResponse>>() {
+            eAushadhaResponses = objectMapper.readValue(response, new TypeReference<List<EAushadhaResponse>>() {
             });
 
-            for (EAushadhaResponse outwardDetail : outwardDetails) {
-                String drugName = outwardDetail.getDrug_name();
-                int batchQuantity = outwardDetail.getQuantity();
-
-                Pattern pattern = Pattern.compile("(\\d+x[\\dx]+)");
-                Matcher matcher = pattern.matcher(drugName);
-
-                if (matcher.find()) {
-                    String quantityExpression = matcher.group(0);
-                    String[] quantityParts = quantityExpression.split("x");
-                    int multiplicationResult = 1;
-
-                    for (String quantityPart : quantityParts) {
-                        int value = Integer.parseInt(quantityPart);
-                        multiplicationResult *= value;
-                    }
-
-                    multiplicationResult *= batchQuantity;
-
-
-                    //assign this multiplication result to actual quantity field in eaushadha response
-                    outwardDetail.setActual_quantity(multiplicationResult);
-
-                }
-            }
         } catch (Exception e) {
-            log.error("Error while logging in to eAushadha", e);
-            new Exception("Error while fetching stock details from eAushadha");
+            log.error("Error while fetching stock details from eAushadha", e);
+            throw new Exception("Error while fetching stock details from eAushadha");
         }
-        return outwardDetails;
+        return eAushadhaResponses;
     }
 
     public String makeHttpRequest(String endpoint, String requestBody, String token) throws Exception {

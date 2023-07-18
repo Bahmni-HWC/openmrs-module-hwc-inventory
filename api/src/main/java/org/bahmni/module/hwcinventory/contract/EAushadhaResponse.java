@@ -1,9 +1,9 @@
 package org.bahmni.module.hwcinventory.contract;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Getter;
 import lombok.Setter;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 @Getter
 @Setter
@@ -25,13 +25,16 @@ public class EAushadhaResponse {
     private String Mfg_date;
     @JsonAlias("Exp_date")
     private String Exp_date;
-    @JsonAlias("Quantity")
-    private int Quantity;
+    @JsonAlias("Quantity_In_Pack")
+    private int Quantity_In_Pack;
+    @JsonAlias("UnitPack")
+    private String UnitPack;
+    @JsonAlias("Quantity_In_Units")
+    private int Quantity_In_Units;
+    @JsonAlias("Supplier")
+    private String Supplier;
     @JsonAlias("Drug_id")
     private String Drug_id;
     @JsonAlias("Drug_name")
     private String Drug_name;
-    private int Actual_quantity;
-
-
 }

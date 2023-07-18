@@ -40,9 +40,9 @@ public class EaushadhaController {
                 outwardDetails = eaushadhaService.fetchStockDetails(stockRecieptRequest.getOuid());
             } catch (Exception e) {
                 e.printStackTrace();
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
             return new ResponseEntity<>(outwardDetails, HttpStatus.OK);
-
 
         } else {
             return new ResponseEntity<>("User not having enough privileges", HttpStatus.FORBIDDEN);
