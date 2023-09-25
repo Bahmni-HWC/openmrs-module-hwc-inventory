@@ -52,7 +52,11 @@ public class EsanjeevaniController extends BaseRestController {
             }
         } catch (LGDCodeNotFoundException e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
+        }
+        catch(NullPointerException e){
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

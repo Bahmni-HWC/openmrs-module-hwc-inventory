@@ -13,9 +13,7 @@ import org.openmrs.module.addresshierarchy.AddressHierarchyLevel;
 import org.openmrs.module.addresshierarchy.service.AddressHierarchyService;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class EsanjeevaniPatientMapper {
 
@@ -58,39 +56,49 @@ public class EsanjeevaniPatientMapper {
 
     private List<EsanjeevaniPatientAddress> mapPatientAddress(Patient patient) throws Exception {
         PersonAddress personAddress = patient.getPersonAddress();
+        isCompletePatientAddress(personAddress);
+        Map<String, Integer> lgdCodeForPersonAddress = getLGDCOdeForPersonAddress(personAddress);
         EsanjeevaniPatientAddress esanjeevaniPatientAddress = new EsanjeevaniPatientAddress();
-        esanjeevaniPatientAddress.setAddressLine1(personAddress.getAddress1());
+        esanjeevaniPatientAddress.setAddressLine1(personAddress.getCityVillage());
         esanjeevaniPatientAddress.setAddressType("Physical");
         esanjeevaniPatientAddress.setAddressUse("Work");
         esanjeevaniPatientAddress.setPostalCode(personAddress.getPostalCode());
-        esanjeevaniPatientAddress.setCityCode(getLGDCode(personAddress.getCityVillage(), AddressField.CITY_VILLAGE));
-        esanjeevaniPatientAddress.setCityDisplay(personAddress.getCityVillage());
-        esanjeevaniPatientAddress.setBlockCode(getLGDCode(personAddress.getAddress4(), AddressField.ADDRESS_4));
-        esanjeevaniPatientAddress.setBlockDisplay(personAddress.getAddress4());
-        esanjeevaniPatientAddress.setDistrictCode(getLGDCode(personAddress.getCountyDistrict(), AddressField.COUNTY_DISTRICT));
+        esanjeevaniPatientAddress.setCityCode(lgdCodeForPersonAddress.get(personAddress.getAddress4()));
+        esanjeevaniPatientAddress.setCityDisplay(personAddress.getAddress4());
+        esanjeevaniPatientAddress.setDistrictCode(lgdCodeForPersonAddress.get(personAddress.getCountyDistrict()));
         esanjeevaniPatientAddress.setDistrictDisplay(personAddress.getCountyDistrict());
-        esanjeevaniPatientAddress.setStateCode(getLGDCode(personAddress.getStateProvince(), AddressField.STATE_PROVINCE));
+        esanjeevaniPatientAddress.setStateCode(lgdCodeForPersonAddress.get(personAddress.getStateProvince()));
         esanjeevaniPatientAddress.setStateDisplay(personAddress.getStateProvince());
         esanjeevaniPatientAddress.setCountryCode("1");
         esanjeevaniPatientAddress.setCountryDisplay("India");
         return Arrays.asList(esanjeevaniPatientAddress);
     }
-    private Integer getLGDCode(String addressFieldValue, AddressField addressField) throws Exception {
+
+    private static void isCompletePatientAddress(PersonAddress personAddress) {
+        if(personAddress.getAddress4()== null || personAddress.getCountyDistrict() == null || personAddress.getStateProvince() == null){
+            throw new NullPointerException("State or District or Sub-district cannot be null");
+        }
+    }
+
+    private Map<String,Integer> getLGDCOdeForPersonAddress(PersonAddress personAddress) throws LGDCodeNotFoundException {
+        Map<String,Integer> lgdCodeMap = new HashMap<>();
         AddressHierarchyService addressHierarchyService = Context.getService(AddressHierarchyService.class);
-        AddressHierarchyLevel addressHierarchyLevel = addressHierarchyService.getAddressHierarchyLevelByAddressField(addressField);
-        List<AddressHierarchyEntry> addressHierarchyEntries = addressHierarchyService.getAddressHierarchyEntriesByLevel(addressHierarchyLevel);
-        Integer lgdCode = null;
-        for (AddressHierarchyEntry addressHierarchyEntry : addressHierarchyEntries) {
-            if (addressHierarchyEntry.getName().equals(addressFieldValue)) {
-                lgdCode = Integer.parseInt(addressHierarchyEntry.getUserGeneratedId());
-                break;
+        AddressHierarchyLevel addressHierarchyLevel = addressHierarchyService.getAddressHierarchyLevelByAddressField(AddressField.ADDRESS_4);
+        List<AddressHierarchyEntry> matchingSubDistrictEntries = addressHierarchyService.getAddressHierarchyEntriesByLevelAndName(addressHierarchyLevel,personAddress.getAddress4());
+
+        for (AddressHierarchyEntry entry : matchingSubDistrictEntries) {
+            AddressHierarchyEntry districtEntry = entry.getParent();
+            AddressHierarchyEntry stateEntry = entry.getParent().getParent();
+
+            if (districtEntry.getName().equalsIgnoreCase(personAddress.getCountyDistrict()) && stateEntry.getName().equalsIgnoreCase(personAddress.getStateProvince())) {
+                lgdCodeMap.put(personAddress.getStateProvince(), Integer.parseInt(stateEntry.getUserGeneratedId()));
+                lgdCodeMap.put(personAddress.getCountyDistrict(), Integer.parseInt(districtEntry.getUserGeneratedId()));
+                lgdCodeMap.put(personAddress.getAddress4(), Integer.parseInt(entry.getUserGeneratedId()));
+                return lgdCodeMap;
             }
         }
 
-        if (lgdCode == null) {
-            throw new LGDCodeNotFoundException("LGD code not found for Patient Address");
-        }
-        return lgdCode;
+        throw new LGDCodeNotFoundException("LGD Code not found for " + personAddress.getAddress4() + ", " + personAddress.getCountyDistrict() + ", " + personAddress.getStateProvince());
     }
 
     private  List<EsanjeevaniContactDetails> mapPatientContactDetails(Patient patient){
