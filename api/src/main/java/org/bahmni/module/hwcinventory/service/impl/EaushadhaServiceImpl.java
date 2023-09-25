@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bahmni.module.hwcinventory.contract.EAushadhaInwardRequest;
+import org.bahmni.module.hwcinventory.contract.EAushadhaInwardResponse;
 import org.bahmni.module.hwcinventory.contract.EAushadhaRequest;
 import org.bahmni.module.hwcinventory.contract.EAushadhaResponse;
 import org.bahmni.module.hwcinventory.service.EaushadhaService;
@@ -46,6 +48,34 @@ public class EaushadhaServiceImpl implements EaushadhaService {
             throw new Exception("Error while fetching stock details from eAushadha");
         }
         return eAushadhaResponses;
+    }
+
+
+
+    public List<EAushadhaInwardResponse> fetchInwardStockDetails(String inwardDate, String instituteId) throws Exception {
+        List<EAushadhaInwardResponse> eAushadhaInwardResponses;
+        try {
+
+            String accessToken = System.getenv("EAUSHADHA_ACCESS_TOKEN");
+
+            String eAushadhaUrl = Context.getAdministrationService().getGlobalProperty("eaushadha.api.baseUrl") + "/api/DWInstituteInward";
+
+
+            EAushadhaInwardRequest externalRequestData = new EAushadhaInwardRequest(inwardDate, instituteId);
+
+            String response = makeHttpRequest(eAushadhaUrl, new ObjectMapper().writeValueAsString(externalRequestData), accessToken);
+
+
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            eAushadhaInwardResponses = objectMapper.readValue(response, new TypeReference<List<EAushadhaInwardResponse>>() {
+            });
+
+        } catch (Exception e) {
+            log.error("Error while fetching Inward stock details from eAushadha", e);
+            throw new Exception("Error while fetching Inward stock details from eAushadha");
+        }
+        return eAushadhaInwardResponses;
     }
 
     public String makeHttpRequest(String endpoint, String requestBody, String token) throws Exception {
