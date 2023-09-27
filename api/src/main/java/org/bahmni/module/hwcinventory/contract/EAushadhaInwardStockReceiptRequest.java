@@ -4,9 +4,6 @@ public class EAushadhaInwardStockReceiptRequest {
     private String inwardDate;
     private String instituteId;
 
-    public EAushadhaInwardStockReceiptRequest() {
-    }
-
     public String getInwardDate() {
         return inwardDate;
     }

@@ -10,38 +10,38 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EAushadhaInwardResponse {
     @JsonAlias("Sl_No")
-    private int Sl_No;
+    private int sl_No;
     @JsonAlias("inwardno")
-    private String inwardno;
+    private String inwardNo;
     @JsonAlias("instituteid")
-    private String instituteid;
+    private String instituteId;
     @JsonAlias("Institute_name")
-    private String Institute_name;
+    private String institute_Name;
     @JsonAlias("InstituteType")
-    private String InstituteType;
+    private String instituteType;
     @JsonAlias("Receipt_Date")
-    private String Receipt_Date;
+    private String receipt_Date;
     @JsonAlias("Batch_number")
-    private String Batch_number;
+    private String batch_Number;
     @JsonAlias("Mfg_date")
-    private String Mfg_date;
+    private String mfg_Date;
     @JsonAlias("Exp_date")
-    private String Exp_date;
+    private String exp_Date;
     @JsonAlias("Quantity_In_Pack")
-    private int Quantity_In_Pack;
+    private int quantity_In_Pack;
     @JsonAlias("UnitPack")
-    private String UnitPack;
+    private String unitPack;
     @JsonAlias("Quantity_In_Units")
-    private int Quantity_In_Units;
+    private int quantity_In_Units;
     @JsonAlias("Available_quantity")
-    private int Available_quantity;
+    private int available_Quantity;
     @JsonAlias("Warehouse_name")
-    private String Warehouse_name;
+    private String warehouse_Name;
     @JsonAlias("Drug_id")
-    private String Drug_id;
+    private String drug_Id;
     @JsonAlias("Drug_name")
-    private String Drug_name;
+    private String drug_Name;
     @JsonAlias("StandardQuality")
-    private String StandardQuality;
+    private String standardQuality;
 
 }

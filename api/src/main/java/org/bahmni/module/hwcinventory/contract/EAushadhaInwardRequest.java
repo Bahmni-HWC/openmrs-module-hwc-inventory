@@ -24,7 +24,4 @@ public class EAushadhaInwardRequest {
     public void setInstituteId(String instituteId) {
         InstituteId = instituteId;
     }
-
-    public EAushadhaInwardRequest() {
-    }
 }
