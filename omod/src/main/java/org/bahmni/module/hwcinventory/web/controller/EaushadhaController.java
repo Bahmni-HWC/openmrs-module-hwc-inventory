@@ -2,8 +2,7 @@ package org.bahmni.module.hwcinventory.web.controller;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bahmni.module.hwcinventory.contract.EAushadhaResponse;
-import org.bahmni.module.hwcinventory.contract.EAushadhaStockRecieptRequest;
+import org.bahmni.module.hwcinventory.contract.*;
 import org.bahmni.module.hwcinventory.service.EaushadhaService;
 import org.openmrs.Privilege;
 import org.openmrs.api.context.Context;
@@ -46,6 +45,26 @@ public class EaushadhaController {
 
         } else {
             return new ResponseEntity<>("User not having enough privileges", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @RequestMapping(value = "/inward-stock-receipt", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity<Object> inwardStockReceipt(@RequestBody EAushadhaInwardStockReceiptRequest InwardStockRecieptRequest) {
+        Privilege privilege = Context.getUserService().getPrivilege("app:inventory");
+        if (Context.getUserContext().getAuthenticatedUser().getPrivileges().contains(Context.getUserService().getPrivilege("app:inventory"))) {
+
+            List<EAushadhaInwardResponse> inwardDetails = null;
+            try {
+                inwardDetails = eaushadhaService.fetchInwardStockDetails(InwardStockRecieptRequest.getInwardDate(),InwardStockRecieptRequest.getInstituteId());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            return new ResponseEntity<>(inwardDetails, HttpStatus.OK);
+
+        } else {
+           return new ResponseEntity<>("User not having enough privileges", HttpStatus.FORBIDDEN);
         }
     }
 
