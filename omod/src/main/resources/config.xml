@@ -53,5 +53,10 @@
         <defaultValue>false</defaultValue>
         <description>set this true if want to log response to esanjeevani</description>
     </globalProperty>
+    <globalProperty>
+        <property>eAushadha.inward</property>
+        <defaultValue>true</defaultValue>
+        <description>set this false if want to use outward API</description>
+    </globalProperty>
 
 </module>
